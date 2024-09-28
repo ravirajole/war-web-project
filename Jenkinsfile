@@ -15,5 +15,5 @@ pipeline
 //   { steps{sshagent(['DEVCICD']) {
 // 	   sh 'scp -o StrictHostKeyChecking=no target/SpringBootStaticWeb-0.0.1-SNAPSHOT.jar ec2-user@172.31.16.242:/usr/share/tomcat/webapps'}}     
 //   }
-//  }
+   }
 }
