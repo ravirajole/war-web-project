@@ -1,47 +1,19 @@
-pipeline {
-    agent any
-    tools {
-        maven 'Maven363'
-    }
-    options {
-        timeout(10)
-        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '5', numToKeepStr: '5')
-    }
-    stages {
-        stage('Build') {
-            steps {
-                sh "mvn clean install"
-            }
-        }
-        stage('upload artifact to nexus') {
-            steps {
-                nexusArtifactUploader artifacts: [
-                    [
-                        artifactId: 'wwp', 
-                        classifier: '', 
-                        file: 'target/wwp-1.0.0.war', 
-                        type: 'war'
-                    ]
-                ], 
-                    credentialsId: 'nexus3', 
-                    groupId: 'koddas.web.war', 
-                    nexusUrl: '10.0.0.91:8081', 
-                    nexusVersion: 'nexus3', 
-                    protocol: 'http', 
-                    repository: 'samplerepo', 
-                    version: '1.0.0'
-            }
-        }
-    }
-    post {
-        always{
-            deleteDir()
-        }
-        failure {
-            echo "sendmail -s mvn build failed receipients@my.com"
-        }
-        success {
-            echo "The job is successful"
-        }
-    }
+pipeline
+{
+ agent any
+ stages
+ {
+  stage('scm checkout')
+  { steps { git 'https://github.com/ravirajole/war-web-project.git'}  }
+
+
+  stage('build the code')    //build the job clean workspace skip test scripts
+  { steps { withMaven(globalMavenSettingsConfig: '', jdk: 'JDK_Home', maven: 'MVN_home', mavenSettingsConfig: '', traceability: true) 
+	    { sh 'mvn clean -B -DskipTests package'} }  
+  }
+//   stage('deploy to tomcat dev')
+//   { steps{sshagent(['DEVCICD']) {
+// 	   sh 'scp -o StrictHostKeyChecking=no target/SpringBootStaticWeb-0.0.1-SNAPSHOT.jar ec2-user@172.31.16.242:/usr/share/tomcat/webapps'}}     
+//   }
+//  }
 }
